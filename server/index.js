@@ -5,12 +5,14 @@ const User = require("./models/User");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const app = express();
 
 const bcrypt_salt = bcrypt.genSaltSync(12);
 
 // middleware
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(
   cors({
@@ -52,12 +54,12 @@ app.post("/login", async (req, res) => {
     const correctPassword = bcrypt.compareSync(password, userDoc.password);
     if (correctPassword) {
       jwt.sign(
-        { email: userDoc.email, id: userDoc._id },
+        { email: userDoc.email, id: userDoc._id, name: userDoc.name },
         process.env.JWT_SECRET,
         {},
         (error, token) => {
           if (error) throw error;
-          res.cookie("token", token).json("Pass ok");
+          res.cookie("token", token).json(userDoc);
         }
       );
     } else {
@@ -65,6 +67,21 @@ app.post("/login", async (req, res) => {
     }
   } else {
     res.json("Not Found");
+  }
+});
+
+// profile endpoint
+app.get("/profile", async (req, res) => {
+  const { token } = req.cookies;
+
+  if (token) {
+    jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
+      if (err) throw err;
+      const {name, email, _id} = await User.findById(userData.id);
+      res.json({name, email, _id});
+    });
+  } else {
+    res.json(null);
   }
 });
 

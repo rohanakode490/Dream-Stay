@@ -1,6 +1,7 @@
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
+import { UserContext } from '../UserContext';
 
 const Login = () => {
 
@@ -11,11 +12,16 @@ const Login = () => {
   // redirect to home page 
   const [redirect, setRedirect] = useState(false)
 
+  // grab the context 
+  const {setUser} = useContext(UserContext)
+
+  // submit the login details to the database 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await axios.post('/login', { email, password })
+      const {data} = await axios.post('/login', { email, password }) //this data obj -> data as stored in mongodb 
+      setUser(data)
       alert("Login Succesful")
       setRedirect(true)
     } catch (error) {
