@@ -9,10 +9,10 @@ const Header = () => {
         <>
             <header className='flex justify-between items-center -mt-7'>
                 {/* logo  */}
-                <a href='/' className="flex items-center">
+                <Link to='/' className="flex items-center">
                     <img src={logo} alt="logo" className='h-32 w-32' />
                     {/* <span className='font-bold text-xl'>Dream Stay</span> */}
-                </a>
+                </Link>
 
                 {/* search bar  */}
                 <div className='flex justify-center gap-2 border border-gray-300 rounded-full py-2 px-4 my-7 shadow-md shadow-gray-300 -ml-1'>
@@ -29,7 +29,7 @@ const Header = () => {
                 </div>
 
                 {/* Profile */}
-                <Link to={'/login'} className='flex items-center gap-2 border border-gray-300 rounded-full py-2 px-4 my-7'>
+                <Link to={user?'/account':'/login'} className='flex items-center gap-2 border border-gray-300 rounded-full py-2 px-4 my-7'>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>

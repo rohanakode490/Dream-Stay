@@ -44,7 +44,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// loggin the user
+// login the user
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const userDoc = await User.findOne({ email });
