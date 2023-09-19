@@ -6,6 +6,8 @@ const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const imageDownloader = require('image-downloader');
+
 const app = express();
 
 const bcrypt_salt = bcrypt.genSaltSync(12);
@@ -13,7 +15,7 @@ const bcrypt_salt = bcrypt.genSaltSync(12);
 // middleware
 app.use(express.json());
 app.use(cookieParser());
-
+app.use('/uploads', express.static(__dirname+'/uploads'))
 app.use(
   cors({
     credentials: true,
@@ -87,7 +89,18 @@ app.get("/profile", async (req, res) => {
 
 // logout endpoint
 app.post("/logout", (req, res) => {
-  res.cookie('token', '').json(true);
+  res.cookie("token", "").json(true);
+});
+
+// image upload link
+app.post("/upload-by-link", async (req, res) => {
+  const { link } = req.body;
+  const newName = Date.now() + '.jpg'; //new name for the image
+  await imageDownloader.image({
+    url: link,
+    dest:  __dirname  + '/uploads/' + newName,
+  });
+  res.json(newName);
 });
 
 app.listen(4000);
