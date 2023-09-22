@@ -6,7 +6,9 @@ const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const imageDownloader = require('image-downloader');
+const imageDownloader = require("image-downloader");
+const multer = require("multer");
+const fs = require("fs"); //files system to rename the file used in "image upload from device" section
 
 const app = express();
 
@@ -15,7 +17,9 @@ const bcrypt_salt = bcrypt.genSaltSync(12);
 // middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use('/uploads', express.static(__dirname+'/uploads'))
+
+// upload image through link
+app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(
   cors({
     credentials: true,
@@ -95,12 +99,30 @@ app.post("/logout", (req, res) => {
 // image upload link
 app.post("/upload-by-link", async (req, res) => {
   const { link } = req.body;
-  const newName = Date.now() + '.jpg'; //new name for the image
+  const newName = Date.now() + ".jpg"; //new name for the image
   await imageDownloader.image({
     url: link,
-    dest:  __dirname  + '/uploads/' + newName,
+    dest: __dirname + "/uploads/" + newName,
   });
   res.json(newName);
+});
+
+// image upload from device
+const photoMiddleware = multer({ dest: "uploads/" });
+
+app.post("/upload", photoMiddleware.array("photos", 100), (req, res) => {
+  //photoMiddleware.array('photos', 100) => max number of photos =100
+  const uploadedFiles = [];
+  for (let i = 0; i < req.files.length; i++) {
+    const { path, originalname } = req.files[i];
+    const [name, extension] = originalname.split(".");
+    const newPath = path + "." + extension;
+    fs.renameSync(path, newPath);
+
+    //newPath was like "uploads\\{filename}" just removing the "uploads\\" part
+    uploadedFiles.push(newPath.replace('uploads\\', ''));
+  }
+  res.json(uploadedFiles);
 });
 
 app.listen(4000);
