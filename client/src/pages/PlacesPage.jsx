@@ -110,8 +110,8 @@ const PlacesPage = ({ selected, onChange }) => {
           {/* PHOTOS FROM DEVICE */}
           <div className='mt-2 grid gap-2 grid-cols-3 lg:grid-cols-6 md:grid-cols-4'>
             {/* DISPLAY THE PREVIEW OF THE PHOTOS */}
-            {addedPhotos.length > 0 && addedPhotos.map((link, index) => (
-              <div key={index} className='h-32 flex'>
+            {addedPhotos.length > 0 && addedPhotos.map((link) => (
+              <div key={link} className='h-32 flex'>
                 <img className='rounded-2xl w-full object-cover ' src={'http://localhost:4000/uploads/' + link} alt="" />
               </div>
             ))}
