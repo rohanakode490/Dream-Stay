@@ -1,7 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+// importing models
 const User = require("./models/User");
+const Place = require("./models/Place");
+
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
@@ -120,9 +123,45 @@ app.post("/upload", photoMiddleware.array("photos", 100), (req, res) => {
     fs.renameSync(path, newPath);
 
     //newPath was like "uploads\\{filename}" just removing the "uploads\\" part
-    uploadedFiles.push(newPath.replace('uploads\\', ''));
+    uploadedFiles.push(newPath.replace("uploads\\", ""));
   }
   res.json(uploadedFiles);
+});
+
+// add the place to the database
+app.post("/places", (req, res) => {
+  const { token } = req.cookies;
+
+  const {
+    title,
+    address,
+    addedPhotos,
+    description,
+    perks,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests,
+  } = req.body;
+
+  jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
+    if (err) throw err;
+
+    const placeDoc = Place.create({
+      owner: userData.id,
+      title: title,
+      address: address,
+      photos: addedPhotos,
+      description: description,
+      perks: perks,
+      extraInfo: extraInfo,
+      checkIn: checkIn,
+      checkOut: checkOut,
+      maxGuests: maxGuests,
+    });
+    
+    res.json(placeDoc);
+  });
 });
 
 app.listen(4000);
