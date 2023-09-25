@@ -159,8 +159,17 @@ app.post("/places", (req, res) => {
       checkOut: checkOut,
       maxGuests: maxGuests,
     });
-    
+
     res.json(placeDoc);
+  });
+});
+
+// get all the places to display
+app.get("/places", (req, res) => {
+  const { token } = req.cookies;
+  jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
+    const { id } = userData;
+    res.json(await Place.find({ owner: id }));
   });
 });
 

@@ -3,6 +3,7 @@ import PerksLabels from '../components/PerksLabels';
 import PhotoUploader from '../components/PhotoUploader';
 import axios from 'axios';
 import AccountNavigation from '../components/AccountNavigation';
+import { Navigate } from 'react-router-dom';
 
 const PlacesFormPage = () => {
     const [title, setTitle] = useState('')
@@ -14,6 +15,7 @@ const PlacesFormPage = () => {
     const [checkIn, setCheckIn] = useState('')
     const [checkOut, setCheckOut] = useState('')
     const [maxGuests, setMaxGuests] = useState(1)
+    const [redirect, setRedirect] = useState(false)
 
     const inputHeader = (header) => {
         return (
@@ -41,6 +43,12 @@ const PlacesFormPage = () => {
         e.preventDefault();
         const placeData = { title, address, addedPhotos, description, perks, extraInfo, checkIn, checkOut, maxGuests }
         await axios.post('/places', placeData);
+
+        setRedirect(true)
+    }
+
+    if (redirect) {
+        return <Navigate to={'/account/places'} />
     }
 
     return (
