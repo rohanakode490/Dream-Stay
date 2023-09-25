@@ -168,8 +168,55 @@ app.post("/places", (req, res) => {
 app.get("/places", (req, res) => {
   const { token } = req.cookies;
   jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
+    if (err) throw err;
     const { id } = userData;
     res.json(await Place.find({ owner: id }));
+  });
+});
+
+// editing the existing pages
+app.get("/places/:id", async (req, res) => {
+  const { id } = req.params;
+  res.json(await Place.findById(id));
+});
+
+// update the data
+app.put("/places/", async (req, res) => {
+  const { token } = req.cookies;
+  const {
+    id,
+    title,
+    address,
+    addedPhotos,
+    description,
+    perks,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests,
+  } = req.body;
+  jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
+    if (err) throw err;
+
+    const placeDoc = await Place.findById(id);
+    if (userData.id === placeDoc.owner.toString()) {
+      //                    ^
+      //                    |
+      //'placeDoc.owner' => is a object data type and 'userData.id' is string datatype
+      placeDoc.set({
+        title: title,
+        address: address,
+        photos: addedPhotos,
+        description: description,
+        perks: perks,
+        extraInfo: extraInfo,
+        checkIn: checkIn,
+        checkOut: checkOut,
+        maxGuests: maxGuests,
+      });
+      await placeDoc.save();
+      res.json("ok");
+    }
   });
 });
 

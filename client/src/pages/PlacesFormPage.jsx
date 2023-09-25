@@ -1,11 +1,12 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PerksLabels from '../components/PerksLabels';
 import PhotoUploader from '../components/PhotoUploader';
 import axios from 'axios';
 import AccountNavigation from '../components/AccountNavigation';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 
 const PlacesFormPage = () => {
+    const { id } = useParams()
     const [title, setTitle] = useState('')
     const [address, setAddress] = useState('')
     const [addedPhotos, setAddedPhotos] = useState([]);
@@ -16,6 +17,25 @@ const PlacesFormPage = () => {
     const [checkOut, setCheckOut] = useState('')
     const [maxGuests, setMaxGuests] = useState(1)
     const [redirect, setRedirect] = useState(false)
+
+    useEffect(() => {
+        if (!id) {
+            return;
+        }
+        axios.get('/places' + id).then(res => {
+            const { data } = res;
+            setTitle(data.title)
+            setAddress(data.address)
+            setAddedPhotos(data.photos)
+            setDescription(data.description)
+            setPerks(data.perks)
+            setExtraInfo(data.extraInfo)
+            setCheckIn(data.checkIn)
+            setCheckOut(data.checkOut)
+            setMaxGuests(data.maxGuests)
+        })
+    }, [id])
+
 
     const inputHeader = (header) => {
         return (
@@ -38,11 +58,18 @@ const PlacesFormPage = () => {
         )
     }
 
-    // ADDIGN NEW PLACES OR HANDLESUBMIT 
-    const addNewPlace = async (e) => {
+    // ADDIGN NEW PLACES OR UPDATE THE EXISTING PAGE  
+    const savePlace = async (e) => {
         e.preventDefault();
         const placeData = { title, address, addedPhotos, description, perks, extraInfo, checkIn, checkOut, maxGuests }
-        await axios.post('/places', placeData);
+        if (id) {
+            // update 
+            await axios.put('/places', { id, ...placeData });
+        }
+        else {
+            // add new place 
+            await axios.post('/places', placeData);
+        }
 
         setRedirect(true)
     }
@@ -54,7 +81,7 @@ const PlacesFormPage = () => {
     return (
         <div>
             <AccountNavigation />
-            <form onSubmit={addNewPlace}>
+            <form onSubmit={savePlace}>
                 {/* TITLE OF PLACE */}
                 {preInput('Title', 'Title for your place, short and catchy')}
                 <input type="text" placeholder='Title' value={title} onChange={ev => setTitle(ev.target.value)} />
