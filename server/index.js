@@ -181,7 +181,7 @@ app.get("/places/:id", async (req, res) => {
 });
 
 // update the data
-app.put("/places/", async (req, res) => {
+app.put("/places/ ", async (req, res) => {
   const { token } = req.cookies;
   const {
     id,
