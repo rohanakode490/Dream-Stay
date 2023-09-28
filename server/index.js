@@ -165,7 +165,7 @@ app.post("/places", (req, res) => {
 });
 
 // get all the places to display
-app.get("/places", (req, res) => {
+app.get("/user-places", (req, res) => {
   const { token } = req.cookies;
   jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
     if (err) throw err;
@@ -219,5 +219,10 @@ app.put("/places/", async (req, res) => {
     }
   });
 });
+
+//display all the places on the main page
+app.get('/places', async (req, res)=>{
+  res.json(await Place.find())
+})
 
 app.listen(4000);
