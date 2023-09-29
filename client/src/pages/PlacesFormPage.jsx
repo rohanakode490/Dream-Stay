@@ -16,6 +16,7 @@ const PlacesFormPage = () => {
     const [checkIn, setCheckIn] = useState('')
     const [checkOut, setCheckOut] = useState('')
     const [maxGuests, setMaxGuests] = useState(1)
+    const [price, setPrice] = useState(1000)
     const [redirect, setRedirect] = useState(false)
 
     useEffect(() => {
@@ -33,6 +34,7 @@ const PlacesFormPage = () => {
             setCheckIn(data.checkIn)
             setCheckOut(data.checkOut)
             setMaxGuests(data.maxGuests)
+            setPrice(data.price)
         })
     }, [id])
 
@@ -61,7 +63,7 @@ const PlacesFormPage = () => {
     // ADDIGN NEW PLACES OR UPDATE THE EXISTING PAGE  
     const savePlace = async (e) => {
         e.preventDefault();
-        const placeData = { title, address, addedPhotos, description, perks, extraInfo, checkIn, checkOut, maxGuests }
+        const placeData = { title, address, addedPhotos, description, perks, extraInfo, checkIn, checkOut, maxGuests, price }
         if (id) {
             // update 
             await axios.put('/places', { id, ...placeData });
@@ -112,7 +114,7 @@ const PlacesFormPage = () => {
 
                 {/* CHECK IN AND CHECK OUT TIME AND MAX GUESTS IT CAN AFFORD */}
                 {preInput('Check In and Check Out time', 'Add Check in and Check Out time, remenber to have some time window for cleaning the room between guests')}
-                <div className='grid gap-1 sm:grid-cols-3'>
+                <div className='grid gap-1 grid-cols-2 md:grid-cols-4'>
                     <div>
                         <h3>Check In Time</h3>
                         <input
@@ -141,6 +143,16 @@ const PlacesFormPage = () => {
                             placeholder='20'
                             value={maxGuests}
                             onChange={ev => setMaxGuests(ev.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <h3>Price per night (in &#8377;)</h3>
+                        <input
+                            className='mt-2 -mb-1'
+                            type="number"
+                            placeholder='1000'
+                            value={price}
+                            onChange={ev => setPrice(ev.target.value)}
                         />
                     </div>
                 </div>
