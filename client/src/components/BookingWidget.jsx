@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { differenceInCalendarDays } from 'date-fns'
 import axios from 'axios'
 import { Navigate } from 'react-router-dom'
+import { UserContext } from '../UserContext'
 
 const BookingWidget = ({ place }) => {
     const [checkIn, setCheckIn] = useState('')
@@ -12,6 +13,14 @@ const BookingWidget = ({ place }) => {
     // form after check-in and check-out are filled
     const [name, setName] = useState('')
     const [phone, setPhone] = useState('')
+
+    // User Context
+    const { user } = useContext(UserContext)
+    useEffect(() => {
+        if (user) {
+            setName(user.name)
+        }
+    }, [user])
 
     let numberOfNights = 0;
     if (checkIn && checkOut) {
@@ -53,13 +62,15 @@ const BookingWidget = ({ place }) => {
                     <input type="number" value={numberOfGuests} onChange={(e) => setNumberOfGuests(e.target.value)} />
                 </div>
                 {/* FORM AFTER CHECKIN AND CHECKOUT IS FILLED */}
-                <div className='py-3 px-4 border-t'>
-                    <label>Name:</label>
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+                {numberOfNights > 0 && (
+                    <div className='py-3 px-4 border-t'>
+                        <label>Name:</label>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
 
-                    <label>Phone Number:</label>
-                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                </div>
+                        <label>Phone Number:</label>
+                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    </div>
+                )}
             </div>
             <button onClick={handleBooking} className="primary mt-4">
                 Book this place

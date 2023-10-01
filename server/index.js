@@ -38,6 +38,17 @@ app.get("/test", (req, res) => {
   res.json("Testing");
 });
 
+// Function for Getting Token
+function getUserDataFromRequest(req) {
+  return new Promise((resolve, reject) => {
+    jwt.verify( req.cookies.token, process.env.JWT_SECRET, {}, async (err, userData) => {
+        if (err) throw err;
+        resolve(userData);
+      }
+    );
+  });
+}
+
 // creating new user
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
@@ -231,12 +242,15 @@ app.get("/places", async (req, res) => {
 });
 
 // booking from BookingWidget.jsx
-app.post("/bookings", (req, res) => {
+app.post("/bookings", async (req, res) => {
+  const userData = await getUserDataFromRequest(req);
+
   const { checkIn, checkOut, numberOfGuests, name, phone, place, price } =
     req.body;
 
   Booking.create({
     place,
+    user: userData.id,
     checkIn,
     checkOut,
     name,
@@ -250,6 +264,13 @@ app.post("/bookings", (req, res) => {
     .catch((err) => {
       throw err;
     });
+});
+
+// BookingsPage - to list all the bookings one user has done
+app.get("/bookings", async (req, res) => {
+  const userData = await getUserDataFromRequest(req);
+  const send = await Booking.find({ user: userData.id })
+  res.json( send );
 });
 
 app.listen(4000);
