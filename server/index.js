@@ -176,7 +176,7 @@ app.get("/user-places", (req, res) => {
   });
 });
 
-// editing the existing pages
+// Sending information to PlacePage.jsx to display all the data of the particular page
 app.get("/places/:id", async (req, res) => {
   const { id } = req.params;
   res.json(await Place.findById(id));
