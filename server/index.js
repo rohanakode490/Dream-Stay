@@ -41,11 +41,20 @@ app.get("/test", (req, res) => {
 // Function for Getting Token
 function getUserDataFromRequest(req) {
   return new Promise((resolve, reject) => {
-    jwt.verify( req.cookies.token, process.env.JWT_SECRET, {}, async (err, userData) => {
-        if (err) throw err;
-        resolve(userData);
-      }
-    );
+    const { token } = req.cookies;
+    if (token) {
+      jwt.verify(
+        req.cookies.token,
+        process.env.JWT_SECRET,
+        {},
+        async (err, userData) => {
+          if (err) throw err;
+          resolve(userData);
+        }
+      );
+    } else {
+      res.json(null);
+    }
   });
 }
 
@@ -93,17 +102,9 @@ app.post("/login", async (req, res) => {
 
 // profile endpoint
 app.get("/profile", async (req, res) => {
-  const { token } = req.cookies;
-
-  if (token) {
-    jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
-      if (err) throw err;
-      const { name, email, _id } = await User.findById(userData.id);
-      res.json({ name, email, _id });
-    });
-  } else {
-    res.json(null);
-  }
+  const userData = await getUserDataFromRequest(req);
+  const { name, email, _id } = await User.findById(userData.id);
+  res.json({ name, email, _id });
 });
 
 // logout endpoint
@@ -141,9 +142,7 @@ app.post("/upload", photoMiddleware.array("photos", 100), (req, res) => {
 });
 
 // add the place to the database
-app.post("/places", (req, res) => {
-  const { token } = req.cookies;
-
+app.post("/places", async (req, res) => {
   const {
     title,
     address,
@@ -157,35 +156,29 @@ app.post("/places", (req, res) => {
     price,
   } = req.body;
 
-  jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
-    if (err) throw err;
-
-    const placeDoc = Place.create({
-      owner: userData.id,
-      title: title,
-      address: address,
-      photos: addedPhotos,
-      description: description,
-      perks: perks,
-      extraInfo: extraInfo,
-      checkIn: checkIn,
-      checkOut: checkOut,
-      maxGuests: maxGuests,
-      price: price,
-    });
-
-    res.json(placeDoc);
+  const userData = await getUserDataFromRequest(req);
+  const placeDoc = await Place.create({
+    owner: userData.id,
+    title: title,
+    address: address,
+    photos: addedPhotos,
+    description: description,
+    perks: perks,
+    extraInfo: extraInfo,
+    checkIn: checkIn,
+    checkOut: checkOut,
+    maxGuests: maxGuests,
+    price: price,
   });
+
+  res.json(placeDoc);
 });
 
 // get all the places to display
-app.get("/user-places", (req, res) => {
-  const { token } = req.cookies;
-  jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
-    if (err) throw err;
-    const { id } = userData;
-    res.json(await Place.find({ owner: id }));
-  });
+app.get("/user-places", async (req, res) => {
+  const userData = await getUserDataFromRequest(req);
+  const { id } = userData;
+  res.json(await Place.find({ owner: id }));
 });
 
 // Sending information to PlacePage.jsx to display all the data of the particular page
@@ -196,7 +189,6 @@ app.get("/places/:id", async (req, res) => {
 
 // update the data
 app.put("/places/", async (req, res) => {
-  const { token } = req.cookies;
   const {
     id,
     title,
@@ -210,30 +202,29 @@ app.put("/places/", async (req, res) => {
     maxGuests,
     price,
   } = req.body;
-  jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
-    if (err) throw err;
 
-    const placeDoc = await Place.findById(id);
-    if (userData.id === placeDoc.owner.toString()) {
-      //                    ^
-      //                    |
-      //'placeDoc.owner' => is a object data type and 'userData.id' is string datatype
-      placeDoc.set({
-        title: title,
-        address: address,
-        photos: addedPhotos,
-        description: description,
-        perks: perks,
-        extraInfo: extraInfo,
-        checkIn: checkIn,
-        checkOut: checkOut,
-        maxGuests: maxGuests,
-        price: price,
-      });
-      await placeDoc.save();
-      res.json("ok");
-    }
-  });
+  const userData = await getUserDataFromRequest(req);
+
+  const placeDoc = await Place.findById(id);
+  if (userData.id === placeDoc.owner.toString()) {
+    //                    ^
+    //                    |
+    //'placeDoc.owner' => is a object data type and 'userData.id' is string datatype
+    placeDoc.set({
+      title: title,
+      address: address,
+      photos: addedPhotos,
+      description: description,
+      perks: perks,
+      extraInfo: extraInfo,
+      checkIn: checkIn,
+      checkOut: checkOut,
+      maxGuests: maxGuests,
+      price: price,
+    });
+    await placeDoc.save();
+    res.json("ok");
+  }
 });
 
 //display all the places on the main page
@@ -269,8 +260,8 @@ app.post("/bookings", async (req, res) => {
 // BookingsPage - to list all the bookings one user has done
 app.get("/bookings", async (req, res) => {
   const userData = await getUserDataFromRequest(req);
-  const send = await Booking.find({ user: userData.id })
-  res.json( send );
+  const send = await Booking.find({ user: userData.id });
+  res.json(send);
 });
 
 app.listen(4000);
