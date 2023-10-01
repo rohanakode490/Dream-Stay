@@ -94,7 +94,9 @@ const PlacePage = () => {
                     {/* DESCRIPTION */}
                     <div className='my-4'>
                         <h2 className='font-semibold text-2xl'>Description</h2>
-                        {place.description}
+                        <div className='whitespace-pre-wrap'>
+                            {place.description}
+                        </div>
                     </div>
 
                     {/* CHECKIN CHECKOUT MAXGUESTS */}
