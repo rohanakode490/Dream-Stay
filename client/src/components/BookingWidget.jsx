@@ -1,18 +1,33 @@
 import React, { useState } from 'react'
 import { differenceInCalendarDays } from 'date-fns'
+import axios from 'axios'
+import { Navigate } from 'react-router-dom'
 
 const BookingWidget = ({ place }) => {
     const [checkIn, setCheckIn] = useState('')
     const [checkOut, setCheckOut] = useState('')
     const [numberOfGuests, setNumberOfGuests] = useState(1)
+    const [redirect, setRedirect] = useState('')
 
     // form after check-in and check-out are filled
     const [name, setName] = useState('')
-    const [mobile, setMobile] = useState('')
+    const [phone, setPhone] = useState('')
 
-    let numberOfNights=0;
-    if(checkIn && checkOut){
-        numberOfNights =differenceInCalendarDays(new Date(checkOut), new Date(checkIn))
+    let numberOfNights = 0;
+    if (checkIn && checkOut) {
+        numberOfNights = differenceInCalendarDays(new Date(checkOut), new Date(checkIn))
+    }
+
+    // Booking the place
+    const handleBooking = async () => {
+        // const data = { checkIn, checkOut, numberOfGuests, name, phone, place: place._id, price: numberOfNights * place.price }
+        const response = await axios.post('/bookings', { checkIn, checkOut, numberOfGuests, name, phone, place: place._id, price: numberOfNights * place.price })
+        const bookingID = response.data._id;
+        setRedirect(`/account/bookings/${bookingID}`)
+    }
+
+    if (redirect) {
+        return (<Navigate to={redirect} />)
     }
 
     return (
@@ -39,16 +54,16 @@ const BookingWidget = ({ place }) => {
                 </div>
                 {/* FORM AFTER CHECKIN AND CHECKOUT IS FILLED */}
                 <div className='py-3 px-4 border-t'>
-                    <label>Number of Guests:</label>
+                    <label>Name:</label>
                     <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-                    
+
                     <label>Phone Number:</label>
-                    <input type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} />
+                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
             </div>
-            <button className="primary mt-4">
+            <button onClick={handleBooking} className="primary mt-4">
                 Book this place
-                {numberOfNights>0 && (
+                {numberOfNights > 0 && (
                     <div>
                         &#8377; {Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(numberOfNights * place.price)} {/* number with commas */}
                     </div>

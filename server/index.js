@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 // importing models
 const User = require("./models/User");
 const Place = require("./models/Place");
+const Booking = require("./models/Booking");
 
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
@@ -142,7 +143,7 @@ app.post("/places", (req, res) => {
     checkIn,
     checkOut,
     maxGuests,
-    price
+    price,
   } = req.body;
 
   jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
@@ -159,7 +160,7 @@ app.post("/places", (req, res) => {
       checkIn: checkIn,
       checkOut: checkOut,
       maxGuests: maxGuests,
-      price: price
+      price: price,
     });
 
     res.json(placeDoc);
@@ -196,7 +197,7 @@ app.put("/places/", async (req, res) => {
     checkIn,
     checkOut,
     maxGuests,
-    price
+    price,
   } = req.body;
   jwt.verify(token, process.env.JWT_SECRET, {}, async (err, userData) => {
     if (err) throw err;
@@ -216,7 +217,7 @@ app.put("/places/", async (req, res) => {
         checkIn: checkIn,
         checkOut: checkOut,
         maxGuests: maxGuests,
-        price: price
+        price: price,
       });
       await placeDoc.save();
       res.json("ok");
@@ -225,8 +226,30 @@ app.put("/places/", async (req, res) => {
 });
 
 //display all the places on the main page
-app.get('/places', async (req, res)=>{
-  res.json(await Place.find())
-})
+app.get("/places", async (req, res) => {
+  res.json(await Place.find());
+});
+
+// booking from BookingWidget.jsx
+app.post("/bookings", (req, res) => {
+  const { checkIn, checkOut, numberOfGuests, name, phone, place, price } =
+    req.body;
+
+  Booking.create({
+    place,
+    checkIn,
+    checkOut,
+    name,
+    phone,
+    numberOfGuests,
+    price,
+  })
+    .then((doc) => {
+      res.json(doc);
+    })
+    .catch((err) => {
+      throw err;
+    });
+});
 
 app.listen(4000);
