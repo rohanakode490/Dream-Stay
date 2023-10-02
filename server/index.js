@@ -260,7 +260,7 @@ app.post("/bookings", async (req, res) => {
 // BookingsPage - to list all the bookings one user has done
 app.get("/bookings", async (req, res) => {
   const userData = await getUserDataFromRequest(req);
-  const send = await Booking.find({ user: userData.id });
+  const send = await Booking.find({ user: userData.id }).populate('place');
   res.json(send);
 });
 
